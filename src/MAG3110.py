@@ -7,17 +7,13 @@ class MAG_3110:
 		
 		self.i2c = I2C(0, I2C.MASTER)
 		self.address = 0x0E # MAG3110 address, 0x0E(14)
+		# Select Control register, 0x10(16)
+		# 0x01(01)	Normal mode operation, Active mode
 		self.i2c.writeto_mem(self.address, 0x10, 0x1)
 		#If there is an temperature offset.
 		self.temp_OFFSET = 8
 		#print(self.i2c.scan()) Prints address
-	def collect_data(self):
-		
-		# Select Control register, 0x10(16)
-		#		0x01(01)	Normal mode operation, Active mode
-		self.i2c.writeto_mem(self.address,0x10,0x1)
-		time.sleep(0.5)
-
+	def collect_data(self):	
 		# MAG3110 address, 0x0E(14)
    		# Read data back from 0x01(1), 6 bytes
     	# X-Axis MSB, X-Axis LSB, Y-Axis MSB, Y-Axis LSB, Z-Axis MSB, Z-Axis LSB
