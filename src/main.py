@@ -23,7 +23,8 @@ Mag = MAG_3110()
 
 while True:
     pack = Mag.collect_data()
-    Mag.print(pack)
+    temp = Mag.temperature()
+    Mag.print(pack, temp)
     if CONNECT_DEVICE:
         print("Attempting to send data")
         iot.send(pack)
