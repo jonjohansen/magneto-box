@@ -1,6 +1,6 @@
-from machine import I2C
 import pycom
 import time
+import machine 
 
 SLAVE_ADDRESS = 0x68
 ## AK8963 I2C slave address
@@ -80,7 +80,7 @@ class MPU_9265:
     
     def __init__(self, address=SLAVE_ADDRESS):        
         # The I2C address for MPU-9265
-        self.i2c = I2C(0, I2C.MASTER)
+        self.i2c = machine.I2C(0, machine.I2C.MASTER)
         self.address = address
 
         self.configMPU_9265(GFS_250, AFS_2G)
@@ -88,41 +88,42 @@ class MPU_9265:
         self.configAK8963(AK8963_MODE_C8HZ, AK8963_BIT_16)
         
     def configMPU_9265(self, gfs, afs):
+            
         if gfs == GFS_250:
-			self.gres = 250.0/32768.0
-		elif gfs == GFS_500:
-			self.gres = 500.0/32768.0
-		elif gfs == GFS_1000:
-			self.gres = 1000.0/32768.0
-		else:  # gfs == GFS_2000
-			self.gres = 2000.0/32768.0
+            self.gres = 250.0/32768.0
+        elif gfs == GFS_500:
+            self.gres = 500.0/32768.0
+        elif gfs == GFS_1000:
+            self.gres = 1000.0/32768.0
+        #else: gfs == GFS_2000
+        #    self.gres = 2000.0/32768.0
+        
+        if afs == AFS_2G:
+            self.ares = 2.0/32768.0
+        elif afs == AFS_4G:
+            self.ares = 4.0/32768.0
+        elif afs == AFS_8G:
+            self.ares = 8.0/32768.0
+        else: # afs == AFS_16G:
+            self.ares = 16.0/32768.0
 
-		if afs == AFS_2G:
-			self.ares = 2.0/32768.0
-		elif afs == AFS_4G:
-			self.ares = 4.0/32768.0
-		elif afs == AFS_8G:
-			self.ares = 8.0/32768.0
-		else: # afs == AFS_16G:
-			self.ares = 16.0/32768.0
-
-        sleep off
+        #sleep off
         self.i2c.writeto_mem(self.address, PWR_MGMT_1, 0x00)
         time.sleep(0.1)
-        auto select clock source
+        #auto select clock source
         self.i2c.writeto_mem(self.address, PWR_MGMT_1, 0x01)
         time.sleep(0.1)
-        DLPF_CFG
+        #DLPF_CFG
         self.i2c.writeto_mem(self.address, CONFIG, 0x03)
-        sample rate divider
+        #sample rate divider
         self.i2c.writeto_mem(self.address, SMPLRT_DIV, 0x04)
-        gyro full scale select
+        #gyro full scale select
         self.i2c.writeto_mem(self.address, GYRO_CONFIG, gfs << 3)
-        accel full scale select
+        #accel full scale select
         self.i2c.writeto_mem(self.address, ACCEL_CONFIG, afs << 3)
-        A_DLPFCFG
+        #A_DLPFCFG
         self.i2c.writeto_mem(self.address, ACCEL_CONFIG_2, 0x03)
-        BYPASS_EN
+        #BYPASS_EN
         self.i2c.writeto_mem(self.address, INT_PIN_CFG, 0x02)
         time.sleep(0.1)
 
@@ -177,16 +178,17 @@ class MPU_9265:
         print(x, y, z)
         return {"x":x, "y":y, "z":z}
 
-    # Check if data is ready
-    #@param [in] self the object pointer.
+    #Check if data is ready
+    # @param [in] self the object pointer.
     # @retval true data is ready
-    #@retval false data is not ready
-    def checkDataReady(self):
-        drdy = 12c.readfrom_mem(self.address, INT_STATUS)
-        if drdy & 0x01:
-            return True
-        else:
-            return False
+    # @retval false data is not ready
+    # def checkDataReady(self):
+        
+    #     drdy = 12c.readfrom_mem(self.address, INT_STATUS)
+    #     if drdy & 0x01:
+    #         return True
+    #     else:
+    #         return False
     
     
     def readGyro(self):
@@ -200,6 +202,7 @@ class MPU_9265:
         y = round(y*self.gres, 3)
         z = round(z*self.gres, 3)
 
+        print(x, y, z)
         return {"x":x, "y":y, "z":z}    
 
     ## Read magneto
@@ -226,6 +229,7 @@ class MPU_9265:
                 x = round(x * self.mres * self.magXcoef, 3)
                 y = round(y * self.mres * self.magYcoef, 3)
                 z = round(z * self.mres * self.magZcoef, 3)
+        
         print(x, y, z)
         return {"x":x, "y":y, "z":z}
 
@@ -251,6 +255,7 @@ class MPU_9265:
         if(value & (1 << 16 - 1)):
             value -= (1<<16)
         
+        print (value)
         return value
 
     # def print_data(self):

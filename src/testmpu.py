@@ -1,7 +1,8 @@
-from machine import I2C
+import machine 
 import pycom
 import time
 
+print("this is a test")
 SLAVE_ADDRESS = 0x68
 ## AK8963 I2C slave address
 AK8963_SLAVE_ADDRESS = 0x0C
@@ -80,10 +81,11 @@ class MPU_9265:
     
     def __init__(self, address=SLAVE_ADDRESS):        
         # The I2C address for MPU-9265
-        self.i2c = I2C(0, I2C.MASTER)
-        print(self.i2c.scan())
+        self.i2c = machine.I2C(0, machine.I2C.MASTER)
+        #print(self.i2c.scan())
         self.address = address
-
+        print(address)
+    
     def read_data(self):
         
         self.i2c.writeto_mem(self.address,)
