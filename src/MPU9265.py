@@ -1,6 +1,6 @@
 import pycom
 import time
-import machine 
+from machine import I2C
 
 SLAVE_ADDRESS = 0x68
 ## AK8963 I2C slave address
@@ -75,12 +75,14 @@ AK8963_BIT_14 = 0x00
 ## 16bit output
 AK8963_BIT_16 = 0x01
 
+print("before class")
 
 class MPU_9265:
     
     def __init__(self, address=SLAVE_ADDRESS):        
         # The I2C address for MPU-9265
-        self.i2c = machine.I2C(0, machine.I2C.MASTER)
+        self.i2c = I2C(0, I2C.MASTER)
+        print("init")
         self.address = address
 
         self.configMPU_9265(GFS_250, AFS_2G)
@@ -146,7 +148,7 @@ class MPU_9265:
         time.sleep(0.01)
 
         # read coef data
-        data = self.i2c.readto_mem(AK8963_SLAVE_ADDRESS, AK8963_ASAX, 3)
+        data = self.i2c.readfrom_mem(AK8963_SLAVE_ADDRESS, AK8963_ASAX, 3)
 
         self.magXcoef = (data[0] - 128) / 256.0 + 1.0
         self.magYcoef = (data[1] - 128) / 256.0 + 1.0
@@ -166,7 +168,8 @@ class MPU_9265:
     #  @retval y : y-axis data
     #  @retval z : z-axis data
     def readAccel(self):
-        data = self.i2c.readto_mem(self.address, ACCEL_OUT, 6)
+        print("in accel")
+        data = self.i2c.readfrom_mem(self.address, ACCEL_OUT, 6)
         x = self.dataConv(data[1], data[0])
         y = self.dataConv(data[3], data[2])
         z = self.dataConv(data[5], data[4])
@@ -175,7 +178,7 @@ class MPU_9265:
         y = round(y*self.ares, 3)
         z = round(z*self.ares, 3)
 
-        print(x, y, z)
+        #print(x, y, z)
         return {"x":x, "y":y, "z":z}
 
     #Check if data is ready
@@ -202,7 +205,7 @@ class MPU_9265:
         y = round(y*self.gres, 3)
         z = round(z*self.gres, 3)
 
-        print(x, y, z)
+        #print(x, y, z)
         return {"x":x, "y":y, "z":z}    
 
     ## Read magneto
@@ -230,7 +233,7 @@ class MPU_9265:
                 y = round(y * self.mres * self.magYcoef, 3)
                 z = round(z * self.mres * self.magZcoef, 3)
         
-        print(x, y, z)
+        #print(x, y, z)
         return {"x":x, "y":y, "z":z}
 
     ## Read temperature
@@ -241,7 +244,7 @@ class MPU_9265:
 
         temp = round((temp / 333.87 + 21.0), 3)
         
-        print(temp)
+        #print(temp)
         return temp
 
 	
@@ -258,24 +261,25 @@ class MPU_9265:
         print (value)
         return value
 
-    # def print_data(self):
-        
-    #     try:
-    #         while True:
-    #             accel = MPU_9265.readAccel()
-    #             print " ax = " , ( accel['x'] )
-    #             print " ay = " , ( accel['y'] )
-    #             print " az = " , ( accel['z'] )
-                
-    #             gyro = MPU_9265.readGyro()
-    #             print " gx = " , ( gyro['x'] )
-    #             print " gy = " , ( gyro['y'] )
-    #             print " gz = " , ( gyro['z'] )
+    def print_data(self):
+        print("trying to print")
+        while True:
+            # accel = self.readAccel()
+            # print(" ax =", accel['x'])
+            # print(" ay =", accel['y'])
+            # print(" az =", accel['z'])
+            
+            gyro = self.readGyro()
+            print(" gx =", gyro['x'])
+            print(" gy =", gyro['y'])
+            print(" gz =", gyro['z'])
 
-    #             mag = MPU_9265.readMagnet()
-    #             print " mx = " , ( mag['x'] )
-    #             print " my = " , ( mag['y'] )
-    #             print " mz = " , ( mag['z'] )
-    #             print
+            # mag = self.readMagnet()
+            # print(" mx =", mag['x'])
+            # print(" my =", mag['y'])
+            # print(" mz =", mag['z'])
 
-    #             time.sleep(0.5)
+            temp = self.readTemperature()
+            print(" Temp = ", temp)
+            
+            time.sleep(0.5)
