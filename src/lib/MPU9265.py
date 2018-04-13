@@ -75,14 +75,11 @@ AK8963_BIT_14 = 0x00
 ## 16bit output
 AK8963_BIT_16 = 0x01
 
-print("before class")
-
 class MPU_9265:
     
     def __init__(self, address=SLAVE_ADDRESS):        
         # The I2C address for MPU-9265
         self.i2c = I2C(0, I2C.MASTER)
-        print("init")
         self.address = address
 
         self.configMPU_9265(GFS_250, AFS_2G)
@@ -168,7 +165,6 @@ class MPU_9265:
     #  @retval y : y-axis data
     #  @retval z : z-axis data
     def readAccel(self):
-        print("in accel")
         data = self.i2c.readfrom_mem(self.address, ACCEL_OUT, 6)
         x = self.dataConv(data[1], data[0])
         y = self.dataConv(data[3], data[2])
@@ -258,28 +254,30 @@ class MPU_9265:
         if(value & (1 << 16 - 1)):
             value -= (1<<16)
         
-        print (value)
+        #print (value)
         return value
+    def fetch_data(self):
+        accel = self.readAccel()
+        gyro = self.readGyro()
+        temp = self.readTemperature()
+        MPURETURN = (accel['x'],accel['y'],accel['z'],gyro['x'],gyro['y'],gyro['z'],temp)
+        return MPURETURN
 
-    def print_data(self):
-        print("trying to print")
-        while True:
-            # accel = self.readAccel()
-            # print(" ax =", accel['x'])
-            # print(" ay =", accel['y'])
-            # print(" az =", accel['z'])
-            
-            gyro = self.readGyro()
-            print(" gx =", gyro['x'])
-            print(" gy =", gyro['y'])
-            print(" gz =", gyro['z'])
-
-            # mag = self.readMagnet()
-            # print(" mx =", mag['x'])
-            # print(" my =", mag['y'])
-            # print(" mz =", mag['z'])
-
-            temp = self.readTemperature()
-            print(" Temp = ", temp)
-            
-            time.sleep(0.5)
+    def print_data(self, PACK):
+        print("MPU DATA")
+        print("=======================")
+        print("Accelerometer")
+        print("=============")
+        print("x =", PACK[0])
+        print("y =", PACK[1])
+        print("z =", PACK[2])
+        print("Gyro")
+        print("=============")
+        print("x =", PACK[3])
+        print("y =", PACK[4])
+        print("z =", PACK[5])
+        print("Temperature")
+        print("=============")
+        print("Gyro temp = ", PACK[6])
+        print("MPU DATA END")
+        print("===========================")

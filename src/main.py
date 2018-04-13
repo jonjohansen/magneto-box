@@ -1,11 +1,10 @@
 import pycom
 from machine import I2C
-
+import math
 import time
-#from MAG3110 import MAG_3110
+from MAG3110 import MAG_3110
 from MPU9265 import MPU_9265
-#from testmpu import MPU_9265
-#from startiot import Startiot
+from startiot import Startiot
 
 #Initial
 pycom.heartbeat(False) # disable the blue blinking
@@ -21,23 +20,42 @@ if CONNECT_DEVICE:
     print("Connected")
     pycom.rgbled(0x00FF00)
 
-#Create instance of the MAG3110 sensor
-#Mag = MAG_3110()
+#Create instance of sensors
+Mag = MAG_3110()
 MPU = MPU_9265()
-#MPUTest = MPU_9265()
 
 while True:
-    pack = MPU.print_data()
-    #pack = MPUTest.read_data()
-    #pack = Mag.collect_data()
-    #Mag.print(pack)
-    MPU.print(pack)
-    pack = Mag.collect_data()
+    # Get data from the sensors
+    MPUDATA = MPU.fetch_data()
+    # MPUDATA:
+    # [0] = Accellerometer X
+    # [1] = Accellerometer Y
+    # [2] = Accellerometer Z
+    # [3] = Gyro X
+    # [4] = Gyro Y
+    # [5] = Gyro Z
+    # [6] = Temperature
+    
+    MAGDATA = Mag.collect_data()
+    # [0] = Mag X
+    # [1] = Mag Y
+    # [2] = MAg Z
+
     temp = Mag.temperature()
-    Mag.print(pack, temp)
+    # Contains temperature from Mag
+ 
+    sum = math.sqrt(MAGDATA[0]**2+MAGDATA[1]**2+MAGDATA[2]**2)
+    print("The vector sum of the magnetic data is "+ str(sum))
+    Mag.print(MAGDATA, temp)
+    MPU.print_data(MPUDATA)
 
     if CONNECT_DEVICE:
         print("Attempting to send data")
-        iot.send(pack)
+        iot.send(MAGDATA)
         print("Data sent")
-    time.sleep(2)
+    print("\n\n")
+    time.sleep(4)
+
+def calibrate_data(MAGDATA, MPUDATA):
+    pass
+
