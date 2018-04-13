@@ -4,14 +4,15 @@ from machine import I2C
 import time
 #from MAG3110 import MAG_3110
 from MPU9265 import MPU_9265
+#from STEVAL-MKI137V1 import STEVAL_MKI137V1
 #from testmpu import MPU_9265
-#from startiot import Startiot
+from startiot import Startiot
 
 #Initial
 pycom.heartbeat(False) # disable the blue blinking
 pycom.rgbled(0x0000FF)
 #Toggle LORA mode.
-CONNECT_DEVICE = 0
+CONNECT_DEVICE = 1
 
 if CONNECT_DEVICE:
     pycom.rgbled(0xFF0000)
