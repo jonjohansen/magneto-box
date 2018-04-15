@@ -12,7 +12,7 @@ from rot2 import *
 pycom.heartbeat(False) # disable the blue blinking
 pycom.rgbled(0x0000FF)
 #Toggle LORA mode.
-CONNECT_DEVICE = 0
+CONNECT_DEVICE = 1
 
 if CONNECT_DEVICE:
     pycom.rgbled(0xFF0000)
@@ -44,7 +44,12 @@ while True:
     # [2] = MAg Z
     temp = Mag.temperature()
     # Contains temperature from Mag
- 
+    temp = Mag.temperature()
+
+
+    cali = calibrate_data(MAGDATA, MPUDATA)
+    
+    pack_data(cali)
     sum = math.sqrt(MAGDATA[0]**2+MAGDATA[1]**2+MAGDATA[2]**2)
     print("The vector sum of the magnetic data is "+ str(sum))
     Mag.print(MAGDATA, temp)
@@ -58,10 +63,21 @@ while True:
     # And the data is
     print(treated_data[0], treated_data[1], treated_data[2])
 
+    ### Packing the data
+    x = str(treated_data[0]) + ','
+    y = str(treated_data[1]) + ','
+    z = str(treated_data[2]) + ','
+
+
+    package = x + y + z
+
     if CONNECT_DEVICE:
         print("Attempting to send data")
-        iot.send(MAGDATA)
+        iot.send(package)
         print("Data sent")
     print("\n\n")
+    
     time.sleep(4)
+
+
 

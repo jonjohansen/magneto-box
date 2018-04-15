@@ -2,8 +2,8 @@ import pycom
 import time
 from machine import I2C
 
+# slave addresses
 SLAVE_ADDRESS = 0x68
-## AK8963 I2C slave address
 AK8963_SLAVE_ADDRESS = 0x0C
 
 ''' MPU-9265 Register Addresses '''
@@ -76,18 +76,18 @@ AK8963_BIT_14 = 0x00
 AK8963_BIT_16 = 0x01
 
 class MPU_9265:
-    
-    def __init__(self, address=SLAVE_ADDRESS):        
-        # The I2C address for MPU-9265
+
+    def __init__(self, address=SLAVE_ADDRESS):
+        # The I2C slave address for MPU-9265
         self.i2c = I2C(0, I2C.MASTER)
         self.address = address
 
         self.configMPU_9265(GFS_250, AFS_2G)
-        
+
         self.configAK8963(AK8963_MODE_C8HZ, AK8963_BIT_16)
-        
+
     def configMPU_9265(self, gfs, afs):
-            
+
         if gfs == GFS_250:
             self.gres = 250.0/32768.0
         elif gfs == GFS_500:
@@ -96,7 +96,7 @@ class MPU_9265:
             self.gres = 1000.0/32768.0
         #else: gfs == GFS_2000
         #    self.gres = 2000.0/32768.0
-        
+
         if afs == AFS_2G:
             self.ares = 2.0/32768.0
         elif afs == AFS_4G:
@@ -135,8 +135,9 @@ class MPU_9265:
         if mfs == AK8963_BIT_14:
             self.mres = 4912.0/8190.0
         else: #  mfs == AK8963_BIT_16:
-            self.mres = 4912.0/32760.0
-
+            self.mres = 4912.0/32760.
+        
+        # write to slave address
         self.i2c.writeto_mem(AK8963_SLAVE_ADDRESS, AK8963_CNTL1, 0x00)
         time.sleep(0.01)
 
@@ -170,29 +171,29 @@ class MPU_9265:
         y = self.dataConv(data[3], data[2])
         z = self.dataConv(data[5], data[4])
 
+        # round data
         x = round(x*self.ares, 3)
         y = round(y*self.ares, 3)
         z = round(z*self.ares, 3)
 
-        #print(x, y, z)
         return {"x":x, "y":y, "z":z}
 
-    #Check if data is ready
+    # Check if data is ready
     # @param [in] self the object pointer.
     # @retval true data is ready
     # @retval false data is not ready
-    # def checkDataReady(self):
-        
-    #     drdy = 12c.readfrom_mem(self.address, INT_STATUS)
-    #     if drdy & 0x01:
-    #         return True
-    #     else:
-    #         return False
-    
-    
+    def checkDataReady(self):
+
+        drdy = 12c.readfrom_mem(self.address, INT_STATUS)
+        if drdy & 0x01:
+            return True
+        else:
+            return False
+
+
     def readGyro(self):
         data = self.i2c.readfrom_mem(self.address, GYRO_OUT, 6)
-    
+
         x = self.dataConv(data[1], data[0])
         y = self.dataConv(data[3], data[2])
         z = self.dataConv(data[5], data[4])
@@ -201,8 +202,7 @@ class MPU_9265:
         y = round(y*self.gres, 3)
         z = round(z*self.gres, 3)
 
-        #print(x, y, z)
-        return {"x":x, "y":y, "z":z}    
+        return {"x":x, "y":y, "z":z}
 
     ## Read magneto
     #  @param [in] self The object pointer.
@@ -228,8 +228,7 @@ class MPU_9265:
                 x = round(x * self.mres * self.magXcoef, 3)
                 y = round(y * self.mres * self.magYcoef, 3)
                 z = round(z * self.mres * self.magZcoef, 3)
-        
-        #print(x, y, z)
+
         return {"x":x, "y":y, "z":z}
 
     ## Read temperature
@@ -239,11 +238,10 @@ class MPU_9265:
         temp = self.dataConv(data[1], data[0])
 
         temp = round((temp / 333.87 + 21.0), 3)
-        
-        #print(temp)
+
         return temp
 
-	
+
     ## Data Convert
     # @param [in] self The object pointer.
     # @param [in] data1 LSB
