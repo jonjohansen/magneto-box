@@ -40,7 +40,7 @@ while True:
     # [0] = Mag X
     # [1] = Mag Y
     # [2] = MAg Z
-
+    temp = Mag.temperature()
     # Contains temperature from Mag
     temp = Mag.temperature()
 
@@ -52,14 +52,12 @@ while True:
     print("The vector sum of the magnetic data is "+ str(sum))
     Mag.print(MAGDATA, temp)
     MPU.print_data(MPUDATA)
-
     if CONNECT_DEVICE:
         print("Attempting to send data")
         iot.send(MAGDATA)
         print("Data sent")
     print("\n\n")
     time.sleep(4)
-
 def calibrate_data(MAGDATA, MPUDATA):
     
     #
