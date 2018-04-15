@@ -49,6 +49,3 @@ class Startiot:
 
   def recv(self, length):
     return self.s.recv(length)
-
-  #def stats(self)
-    return lora.stats()
