@@ -5,6 +5,8 @@ import time
 from MAG3110 import MAG_3110
 from MPU9265 import MPU_9265
 from startiot import Startiot
+from rot2 import *
+
 
 #Initial
 pycom.heartbeat(False) # disable the blue blinking
@@ -47,12 +49,19 @@ while True:
     print("The vector sum of the magnetic data is "+ str(sum))
     Mag.print(MAGDATA, temp)
     MPU.print_data(MPUDATA)
+
+    treated_data = matrixise(MPUDATA, MAGDATA)
+
+    # Lets just see if the magnitude is the same. 
+    aftersum = math.sqrt(treated_data[0]**2+treated_data[1]**2+treated_data[2]**2)
+    print("Aftersum is "+ str(aftersum))
+    # And the data is
+    print(treated_data[0], treated_data[1], treated_data[2])
+
     if CONNECT_DEVICE:
         print("Attempting to send data")
         iot.send(MAGDATA)
         print("Data sent")
     print("\n\n")
     time.sleep(4)
-def calibrate_data(MAGDATA, MPUDATA):
-    pass
 
