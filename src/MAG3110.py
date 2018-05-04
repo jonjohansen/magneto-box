@@ -67,8 +67,17 @@ class MAG_3110:
 		if zMag > 32767 :
 			zMag -= 65536
 
-		package = (xMag, yMag, zMag)
-		return (package)
+		return (xMag, yMag, zMag)
+
+	''' Since the data we get from the magnetic sensor is given in a 8 bit
+	    we need to convert it to actual nano-tesla.
+	'''
+	def convert_to_nt(self, package):
+
+		package[0] *= 100/3
+		package[1] *= 100/3
+		package[2] *= 100/3
+		return package
 
 	def print(self, package, temperature):
 		print("Temperature: " +str(temperature)+"C")

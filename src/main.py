@@ -42,42 +42,31 @@ while True:
     # [0] = Mag X
     # [1] = Mag Y
     # [2] = MAg Z
-    temp = Mag.temperature()
-    # Contains temperature from Mag
-    temp = Mag.temperature()
-
-
-    cali = calibrate_data(MAGDATA, MPUDATA)
     
-    pack_data(cali)
-    sum = math.sqrt(MAGDATA[0]**2+MAGDATA[1]**2+MAGDATA[2]**2)
-    print("The vector sum of the magnetic data is "+ str(sum))
-    Mag.print(MAGDATA, temp)
     MPU.print_data(MPUDATA)
 
-    treated_data = matrixise(MPUDATA, MAGDATA)
-
-    # Lets just see if the magnitude is the same. 
-    aftersum = math.sqrt(treated_data[0]**2+treated_data[1]**2+treated_data[2]**2)
-    print("Aftersum is "+ str(aftersum))
+    #Adjust data for positiona axis
+    data = matrixise(MPUDATA, MAGDATA)
+    # Make the adjustments into nanotesla
+    data = Mag.convert_to_nt(data)
     # And the data is
-    print(treated_data[0], treated_data[1], treated_data[2])
+    print(data[0], data[1], data[2])
 
     ### Packing the data
-    x = str(treated_data[0]) + ','
-    y = str(treated_data[1]) + ','
-    z = str(treated_data[2]) + ','
+    x = str(data[0]) + ','
+    y = str(data[1]) + ','
+    z = str(data[2]) + ','
+    temperature = str(MPUDATA[6])+ ','
 
-
-    package = x + y + z
+    package = x + y + z + temperature
 
     if CONNECT_DEVICE:
         print("Attempting to send data")
         iot.send(package)
         print("Data sent")
     print("\n\n")
-    
-    time.sleep(4)
+
+    time.sleep(10)
 
 
 

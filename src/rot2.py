@@ -12,64 +12,73 @@ which will give a div by zero error.
 """
 
 def rotate(vector):
-    b = umatrix.matrix([[0,0,1]])           #creating reference matrix
-    v = cross(vector,b)                     #finding cross product of the matrix "vector" and reference matrix
-    b.shape = (3,1)                         #reshapes reference matrix to a column
-    c = dot(vector,b)                       #finds vector dot b (cosine of angle between them)
-    v_x = umatrix.matrix([[0,v[0,2],-v[0,1]],[-v[0,2],0,v[0,0]],[v[0,1],-v[0,0],0]])    #skew-symmetric cross-product matrix of v
-    I = umatrix.matrix([[1,0,0],[0,1,0],[0,0,1]])   #three dimensional identity matrix
-    R = I+v_x+dot(v_x,v_x)*(1/(c[0,0]+1))           #calculating rotation matrix
-#    result = (dot(vector,R))                        #testing that vector dot rotation matrix is in fact identical to reference matrix
-#    if m.fabs(result[0,0])<0.00001:                 #removing irrelevant numerical errors
-#        result[0,0]=0                               
-#    if m.fabs(result[0,1])<0.00001:                 #removing irrelevant numerical errors
-#        result[0,1]=0
-#    if m.fabs(result[0,2])<0.00001:                 #removing irrelevant numerical errors
-#        result[0,2]=0
-#    resulttest=result.copy()                        #copying result vector
-#    resulttest.shape=(3,1)                          #reshaping result vector
-#    return(R)
+    # Creating reference matrix
+    b = umatrix.matrix([[0,0,1]])
+    # Finding cross product of the matrix "vector" and reference matrix
+    v = cross(vector,b)
+    # Reshapes reference matrix to a column
+    b.shape=(3,1)
+    # Finds vector dot b (cosine of angle between them)
+    c = dot(vector,b)
+    # Skew-symmetric cross-product matrix of v
+    v_x = umatrix.matrix([[0,v[0,2],-v[0,1]],[-v[0,2],0,v[0,0]],[v[0,1],-v[0,0],0]])
+    # Three dimensional identity matrix
+    I = umatrix.matrix([[1,0,0],[0,1,0],[0,0,1]])
+    # Calculating rotation matrix
+    R = I+v_x+dot(v_x,v_x)*(1/(c[0,0]+1))
+
+    return(R)
 
 def matrixise(accelerometertuple, magnetotuple):
-    a = accelerometertuple[0]           #fetching x-component of the accelerometer data
-    b = accelerometertuple[1]           #fetching y-component
-    c = accelerometertuple[2]           #and z-component
+    # Fetching accelerometer data
+    ax = accelerometertuple[0]
+    ay = accelerometertuple[1]
+    az = accelerometertuple[2]
 
-    vector=umatrix.matrix([[a,b,c]])    #creating a matrix-object which contains the force vector
-    vector2=vector.copy()               #copying force vector
-    vector2.shape=(3,1)                 #reshaping copied force vector into a column vector as opposed to a row vector
-    length=dot(vector,vector2)          #calculating magnitude squared of force vector by dot multiplying it with its copy
-    inversefuckyou=1/m.sqrt(length[0,0])#finding the inverse of the force vector magnitude as a float value
-    vector=vector*inversefuckyou        #normalizing force vector to unit size
+    # Creating a matrix-object which contains the force vector
+    vector = umatrix.matrix([[ax,ay,az]])
+    # Copying force vector
+    vector2 = vector.copy()
+    # Reshaping copied force vector into a column vector as opposed to a row vector
+    vector2.shape = (3,1)
+    # Calculating magnitude squared of force vector by dot multiplying it with its copy
+    length = dot(vector,vector2)
+    # Finding the inverse of the force vector magnitude as a float value
+    inverse = 1 / m.sqrt(length[0,0])
+    # Normalizing force vector to unit size
+    vector = vector*inverse
 
-    rotationmatrix=(rotate(vector))     #finding rotation matrix
+    # Finding rotation matrix
+    rotationmatrix = (rotate(vector))
+    # Fetching magnetic data
+    mx = magnetotuple[0]
+    my = magnetotuple[1]
+    mz = magnetotuple[2]
+    # Creating a matrix-object which contains the magnetic field vector
+    magnetomatrix = umatrix.matrix([[mx,my,mz]])
+    # Rotating the magnetic field vector with the rotation matrix found for gravitational force
+    rotatedmatrix = dot(magnetomatrix,rotationmatrix)
+    # Converting rotated values to a list
+    rotatedtuple = [rotatedmatrix[0,0],rotatedmatrix[0,1],rotatedmatrix[0,2]]
 
-    x=magnetotuple[0]                   #fetching x-component of the magnetometer data
-    y=magnetotuple[1]                   #fetching y-component
-    z=magnetotuple[2]                   #and z-component
-    magnetomatrix=umatrix.matrix([[x,y,z]]) #creating a matrix-object which contains the magnetic field vector
-    
-    rotatedmatrix=dot(magnetomatrix,rotationmatrix) #rotating the magnetic field vector with the rotation matrix found for gravitational force
-    rotatedtuple=[rotatedmatrix[0,0],rotatedmatrix[0,1],rotatedmatrix[0,2]] #converting rotated values to a list
-    
-    return(rotatedtuple)                #returning rotated list
+    # Treat data with conversion
+    return(rotatedtuple)
 
-    treated = treat_yo_data(rotatedtuple)
-    return(treated)
+def test():
+    # Test data. This test data is very basic but tests the convertion methods 
 
-def treat_yo_data(rotated):
+    # Simulating the box being upside down.
+    print("\nSimulating the box being upside down.")
+    accelerodata = (0.001, 0.001, -1) 
+    magneticdata = (0, 0, -100)
+    returndata = matrixise(accelerodata, magneticdata)
+    print("The expected Z value should be 100, we got " + str(returndata[2])+"\n")
 
-    rotated[0] *= 100/3
-    rotated[1] *= 100/3
-    rotated[2] *= 100/3
+    # Simulates that the box is on its side
+    print("Simulates that the box is on its side")
+    accelerodata = (0, -1, 0) 
+    magneticdata = (0, -100, 0)
+    returndata = matrixise(accelerodata, magneticdata)
+    print("The expected Z value should be 100, we got " + str(returndata[2]))
 
-    return rotated
-
-#a=1
-#b=2
-#c=3
-
-#magnetotuple=[1,2,3]
-#accelerometertuple=[a,b,c]
-#testvec=(matrixise(accelerometertuple,magnetotuple))
-#print(m.sqrt(1**2+2**2+3**2),m.sqrt(testvec[0]**2+testvec[1]**2+testvec[2]**2))
+#test()
