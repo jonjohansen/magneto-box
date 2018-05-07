@@ -35,6 +35,18 @@ def matrixise(accelerometertuple, magnetotuple):
     ay = accelerometertuple[1]
     az = accelerometertuple[2]
 
+    up = 0
+    down = 0
+
+    if ax == 0:
+        if ay == 0:
+            if az == -1:
+                #opp opp
+                down = 1
+            if az == 1:
+                #rett ned
+                up = 1
+
     # Creating a matrix-object which contains the force vector
     vector = umatrix.matrix([[ax,ay,az]])
     # Copying force vector
@@ -48,18 +60,30 @@ def matrixise(accelerometertuple, magnetotuple):
     # Normalizing force vector to unit size
     vector = vector*inverse
 
-    # Finding rotation matrix
-    rotationmatrix = (rotate(vector))
+
+
+
+
+    # Finding rotation matrix if accelerometer vector is not parallel to Z.
+    if up == 0 and down == 0:
+        rotationmatrix = (rotate(vector))
     # Fetching magnetic data
     mx = magnetotuple[0]
     my = magnetotuple[1]
     mz = magnetotuple[2]
     # Creating a matrix-object which contains the magnetic field vector
-    magnetomatrix = umatrix.matrix([[mx,my,mz]])
-    # Rotating the magnetic field vector with the rotation matrix found for gravitational force
-    rotatedmatrix = dot(magnetomatrix,rotationmatrix)
-    # Converting rotated values to a list
-    rotatedtuple = [rotatedmatrix[0,0],rotatedmatrix[0,1],rotatedmatrix[0,2]]
+    
+    if up == 1:
+        return [mx, my, mz]
+    elif down == 1:
+        return [mx, my, -mz]
+    
+    else:    
+        magnetomatrix = umatrix.matrix([[mx,my,mz]])
+        # Rotating the magnetic field vector with the rotation matrix found for gravitational force
+        rotatedmatrix = dot(magnetomatrix,rotationmatrix)
+        # Converting rotated values to a list
+        rotatedtuple = [rotatedmatrix[0,0],rotatedmatrix[0,1],rotatedmatrix[0,2]]
 
     # Treat data with conversion
     return(rotatedtuple)
@@ -79,6 +103,27 @@ def test():
     accelerodata = (0, -1, 0) 
     magneticdata = (0, -100, 0)
     returndata = matrixise(accelerodata, magneticdata)
-    print("The expected Z value should be 100, we got " + str(returndata[2]))
+    print("The expected Z value should be 100, we got " + str(returndata[2])+"\n")
 
-#test()
+    # simulates the box being exactly upside down
+    print("\nSimulating the box being exactly upside down.")
+    accelerodata = (0, 0, -1)
+    magneticdata = (0, 0, -100)
+    returndata = matrixise(accelerodata, magneticdata)
+    print("The expected z value should be 100, we got " + str(returndata[2])+"\n")
+
+    # Simulates the box being exactly parallel to gravity
+    print("\nSimulating the box being exactly parallel to gravity.")
+    accelerodata = (0, 0, 1)
+    magneticdata = (0, 0, 100)
+    returndata = matrixise(accelerodata, magneticdata)
+    print("The expected z value should be 100, we got " + str(returndata[2])+"\n")
+
+    # Simulates one zero-valued variable
+    print("\nSimulates one zero-valued variable.")
+    accelerodata = (0.0001, 0.0000, 0.9999)
+    magneticdata = (00.0001, 0.0000, 99.9999)
+    returndata = matrixise(accelerodata, magneticdata)
+    print("The expected z value should be 99.99, we got " + str(returndata[2]))
+
+test()
