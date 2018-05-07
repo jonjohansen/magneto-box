@@ -2,12 +2,12 @@ import pycom
 import time
 from machine import I2C
 
-# slave addresses
+# Slave addresses
 SLAVE_ADDRESS = 0x68
 AK8963_SLAVE_ADDRESS = 0x0C
 
 ''' MPU-9265 Register Addresses '''
-# sample rate driver
+# Sample rate driver
 SMPLRT_DIV     = 0x19
 CONFIG         = 0x1A
 GYRO_CONFIG    = 0x1B
@@ -82,10 +82,12 @@ class MPU_9265:
         self.i2c = I2C(0, I2C.MASTER)
         self.address = address
 
+        # Set up sensor configurations
         self.configMPU_9265(GFS_250, AFS_2G)
 
         self.configAK8963(AK8963_MODE_C8HZ, AK8963_BIT_16)
 
+    # Configure MPU-9265 sensor before outputting data
     def configMPU_9265(self, gfs, afs):
 
         if gfs == GFS_250:
@@ -127,10 +129,9 @@ class MPU_9265:
         time.sleep(0.1)
 
 
-    # Configure AK8963
-    #  @param [in] self The object pointer.
-    #  @param [in] mode Magneto Mode Select(default:AK8963_MODE_C8HZ[Continous 8Hz])
-    #  @param [in] mfs Magneto Scale Select(default:AK8963_BIT_16[16bit])
+    # Configure AK8963 sensor
+    #  Magneto Mode Select(default:AK8963_MODE_C8HZ[Continous 8Hz])
+    #  Magneto Scale Select(default:AK8963_BIT_16[16bit])
     def configAK8963(self, mode, mfs):
         if mfs == AK8963_BIT_14:
             self.mres = 4912.0/8190.0
@@ -156,15 +157,11 @@ class MPU_9265:
         self.i2c.writeto_mem(AK8963_SLAVE_ADDRESS, AK8963_CNTL1, 0x00)
         time.sleep(0.01)
 
-        # set scale&continous mode
+        # set scale and continous mode
         self.i2c.writeto_mem(AK8963_SLAVE_ADDRESS, AK8963_CNTL1, (mfs<<4|mode))
         time.sleep(0.01)
 
-    # Read accelerometer
-    #  @param [in] self The object pointer.
-    #  @retval x : x-axis data
-    #  @retval y : y-axis data
-    #  @retval z : z-axis data
+    # Read accelerometer, return data points
     def readAccel(self):
         data = self.i2c.readfrom_mem(self.address, ACCEL_OUT, 6)
         x = self.dataConv(data[1], data[0])
@@ -178,10 +175,7 @@ class MPU_9265:
 
         return {"x":x, "y":y, "z":z}
 
-    # Check if data is ready
-    # @param [in] self the object pointer.
-    # @retval true data is ready
-    # @retval false data is not ready
+    # Check if data is ready and return true/false
     def checkDataReady(self):
 
         drdy = 12c.readfrom_mem(self.address, INT_STATUS)
@@ -190,7 +184,7 @@ class MPU_9265:
         else:
             return False
 
-
+    # Read gyroscope and return data points
     def readGyro(self):
         data = self.i2c.readfrom_mem(self.address, GYRO_OUT, 6)
 
@@ -204,11 +198,7 @@ class MPU_9265:
 
         return {"x":x, "y":y, "z":z}
 
-    ## Read magneto
-    #  @param [in] self The object pointer.
-    #  @retval x : X-magneto data
-    #  @retval y : y-magneto data
-    #  @retval z : Z-magneto data
+    # Read magnet sensor and return data points
     def readMagnet(self):
         x=0
         y=0
@@ -231,8 +221,7 @@ class MPU_9265:
 
         return {"x":x, "y":y, "z":z}
 
-    ## Read temperature
-    #  @param [out] temperature temperature(degrees C)
+    # Read temperature and return temperature
     def readTemperature(self):
         data = self.i2c.readfrom_mem(self.address, TEMP_OUT, 2)
         temp = self.dataConv(data[1], data[0])
@@ -241,19 +230,15 @@ class MPU_9265:
 
         return temp
 
-
-    ## Data Convert
-    # @param [in] self The object pointer.
-    # @param [in] data1 LSB
-    # @param [in] data2 MSB
-    # @retval Value MSB+LSB(int 16bit)
+    ## Data convertion trough bit shifting, return new data
     def dataConv(self, data1, data2):
         value = data1 | (data2 << 8)
         if(value & (1 << 16 - 1)):
             value -= (1<<16)
-        
-        #print (value)
+    
         return value
+
+    # Fetch all sensor data and return packaged
     def fetch_data(self):
         accel = self.readAccel()
         gyro = self.readGyro()
@@ -261,6 +246,7 @@ class MPU_9265:
         MPURETURN = (accel['x'],accel['y'],accel['z'],gyro['x'],gyro['y'],gyro['z'],temp)
         return MPURETURN
 
+    # Print raw data from sensors
     def print_data(self, PACK):
         print("MPU DATA")
         print("=======================")
