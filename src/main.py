@@ -4,6 +4,7 @@ import math
 import time
 from MAG3110 import MAG_3110
 from MPU9265 import MPU_9265
+from lis2 import LIS3MDL
 from startiot import Startiot
 from rot2 import *
 
@@ -12,7 +13,7 @@ from rot2 import *
 pycom.heartbeat(False) # disable the blue blinking
 pycom.rgbled(0x0000FF)
 #Toggle LORA mode.
-CONNECT_DEVICE = 1
+CONNECT_DEVICE = 0
 
 if CONNECT_DEVICE:
     pycom.rgbled(0xFF0000)
@@ -23,10 +24,16 @@ if CONNECT_DEVICE:
     pycom.rgbled(0x00FF00)
 
 #Create instance of sensors
+i2c = I2C(0, I2C.MASTER)
 Mag = MAG_3110()
 MPU = MPU_9265()
+magnet = LIS3MDL()
+magnet.enableLIS()
+
+print(i2c.scan())
 
 while True:
+    
     # Get data from the sensors
     MPUDATA = MPU.fetch_data()
     # MPUDATA:
@@ -43,14 +50,14 @@ while True:
     # [1] = Mag Y
     # [2] = MAg Z
     
-    MPU.print_data(MPUDATA)
-
+    #MPU.print_data(MPUDATA)
+    
     #Adjust data for positiona axis
     data = matrixise(MPUDATA, MAGDATA)
     # Make the adjustments into nanotesla
     data = Mag.convert_to_nt(data)
     # And the data is
-    print(data[0], data[1], data[2])
+    print("Magnet1\n" + str(data[0]) + "\tY:" + str(data[1])+ "\tZ:" + str(data[2]))
 
     ### Packing the data
     x = str(data[0]) + ','
@@ -65,8 +72,9 @@ while True:
         iot.send(package)
         print("Data sent")
     print("\n\n")
-
-    time.sleep(10)
+    mag2rawshit = magnet.getMagnetometerRaw()
+    print("Magnet2\n" + str(mag2rawshit[0]) + "\tY:" + str(mag2rawshit[1])+ "\tZ:" + str(mag2rawshit[2]))
+    time.sleep(5)
 
 
 
