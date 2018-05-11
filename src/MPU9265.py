@@ -84,7 +84,6 @@ class MPU_9265:
 
         # Set up sensor configurations
         self.configMPU_9265(GFS_250, AFS_2G)
-
         self.configAK8963(AK8963_MODE_C8HZ, AK8963_BIT_16)
 
     # Configure MPU-9265 sensor before outputting data
@@ -178,7 +177,7 @@ class MPU_9265:
     # Check if data is ready and return true/false
     def checkDataReady(self):
 
-        drdy = 12c.readfrom_mem(self.address, INT_STATUS)
+        drdy = i2c.readfrom_mem(self.address, INT_STATUS)
         if drdy & 0x01:
             return True
         else:
