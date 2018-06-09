@@ -86,7 +86,7 @@ class MPU_9265:
         self.configMPU_9265(GFS_250, AFS_2G)
         self.configAK8963(AK8963_MODE_C8HZ, AK8963_BIT_16)
 
-    """ MPU-9265 configuration for different modes and registers to input/output data """"
+    """ MPU-9265 configuration for different modes and registers to input/output data """
     def configMPU_9265(self, gfs, afs):
 
         if gfs == GFS_250:
