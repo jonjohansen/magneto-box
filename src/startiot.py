@@ -7,9 +7,9 @@ import machine
 
 class Startiot:
   def __init__(self):
-    self.dev_eui = binascii.unhexlify("***REMOVED***")
-    self.app_eui = binascii.unhexlify("***REMOVED***")
-    self.app_key = binascii.unhexlify("***REMOVED***")
+    self.dev_eui = binascii.unhexlify("**REMOVED**")
+    self.app_eui = binascii.unhexlify("**REMOVED**")
+    self.app_key = binascii.unhexlify("**REMOVED**")
 
     self.lora = LoRa(mode=LoRa.LORAWAN)
 
