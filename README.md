@@ -40,7 +40,7 @@ This project is set up to use LoRaWAN connection to communicate with Telenors ma
 Our project report documenting our development progress, data results and findings. This can be used as a full scale documentation of the project.
 
 #### LoPy / Micropython
-* [**Micropython I2C** library documenation](http://docs.micropython.org/en/latest/wipy/library/machine.I2C.html)
+* [**Micropython I2C** library documentation](http://docs.micropython.org/en/latest/wipy/library/machine.I2C.html)
 * [**LoPy** documentation](https://docs.pycom.io/chapter/gettingstarted/connection/lopy.html)
 * [**mpfshell** A simple shell based file explorer for Micropython based devices](https://github.com/wendlers/mpfshell) 
 
